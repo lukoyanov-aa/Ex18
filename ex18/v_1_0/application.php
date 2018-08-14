@@ -1,4 +1,4 @@
-<?
+<?php
 require_once("tools.php");
 require_once("db.php");
 require_once("log.php");
@@ -73,7 +73,13 @@ class CApplication
     {
 		global $db;
 		switch ($operation){
-			case 'add_rating_users': 
+			case 'add_portal_auth':    
+                            $this->saveAuth();		
+                            $this->returnJSONResult(array('status' => 'success', 'result' => ''));                            
+				
+			break;
+                        
+                        case 'add_rating_users': 
 			
 				foreach ($params['users'] as $arUser) {
 					try {
@@ -83,14 +89,12 @@ class CApplication
 							
 					}	
 					catch (Exception $error) {
-						$this->returnJSONResult(array('status' => 'error', 'result' => $error->getMessage()));
+					$this->returnJSONResult(array('status' => 'error', 'result' => $error->getMessage()));
 					}		
 				}
 				
-				$this->saveAuth();		
-				$this->returnJSONResult(array('status' => 'success', 'result' => ''));
-				
-			break;
+				$this->saveAuth();				
+                        break;
 			
 			case 'get_users': 
 			
