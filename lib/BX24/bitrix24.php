@@ -1,7 +1,7 @@
 <?php
 namespace Bitrix24;
 
-require_once 'log.php';
+require_once '../../lib/log.php';
 
 class Bitrix24
 {

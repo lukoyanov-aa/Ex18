@@ -1,7 +1,8 @@
 <?php
 require_once("tools.php");
-require_once("db.php");
-require_once("log.php");
+require_once("../../vendor/db.php");
+require_once("../../lib/log.php");
+require_once("../../lib/loging.php");
 
 class CApplication
 {
@@ -73,9 +74,12 @@ class CApplication
     {
 		global $db;
 		switch ($operation){
-			case 'add_portal_auth':    
+			case 'add_portal_auth': 
+                            writeToLog('Hello',' world');
                             $this->saveAuth();		
-                            $this->returnJSONResult(array('status' => 'success', 'result' => ''));                            
+                            $this->returnJSONResult(array('status' => 'success', 'result' => ''));
+                            writeToLog('Hello',' world1');
+                            
 				
 			break;
                         
@@ -86,7 +90,7 @@ class CApplication
 
 						$res = $db->query('insert into b24_users (`PORTAL`, `ID_USER`, `NAME`) values (?s, ?i, ?s)', 
 							$params['domain'], $arUser['id'], $arUser['name']);
-							
+						writeToLog('Hello',' world');	
 					}	
 					catch (Exception $error) {
 					$this->returnJSONResult(array('status' => 'error', 'result' => $error->getMessage()));

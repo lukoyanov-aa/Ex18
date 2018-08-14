@@ -204,8 +204,8 @@ application.prototype.finishInstallation = function () {
 	$('#save-btn').find('i').removeClass('fa-check').addClass('fa-spinner').addClass('fa-spin');
 	
 	var authParams = BX24.getAuth(), 
-		params = array_merge({operation: 'add_rating_users'}, authParams),
-		params = array_merge(params, {'users': this.arInstallRatingUsers}),
+		params = array_merge({operation: 'add_portal_auth'}, authParams),
+		params = array_merge(params, {}),
 		curapp = this;
 
 	$.post(

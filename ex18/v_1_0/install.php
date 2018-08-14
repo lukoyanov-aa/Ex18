@@ -32,7 +32,16 @@
 		<h4>Установка приложения "Рейтинг"</h4>
 		<p>Составьте список пользователей, которые будут участвовать в рейтинге</p>
 	</div>
-	<div class="alert alert-dismissable alert-warning hidden" id="error"></div>	
+	<div class="alert alert-dismissable alert-warning hidden" id="error"></div>
+	<div>
+		<a  href="javascript:void(0);" onclick="app.addRatingUsers();"  class="btn btn-primary btn-raised"><i class="fa fa-user"></i> добавить<div class="ripple-wrapper"></div></a>
+	</div>
+	<div class="row">
+		<div class="col-md-8 col-sm-12">
+			<ul id="users" class="list-unstyled hidden">
+			</ul>
+		</div>
+	</div>
 	<div>
 		<a href="javascript:void(0);" id="save-btn" onclick="app.finishInstallation();" class="btn btn-success btn-raised"><i class="fa fa-check"></i> сохранить<div class="ripple-wrapper"></div></a>
 	</div>
