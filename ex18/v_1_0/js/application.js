@@ -75,6 +75,33 @@
   
 })();
 
+application.prototype.addBlocks = function () {    
+    BX24.callMethod(
+        'landing.repo.register',         
+        data,
+        function(result)
+            {
+                if(result.error())
+                    console.error(result.error());
+                else
+                    console.info(result.data());
+            }
+    );
+}
+
+application.prototype.delBlocks = function () {
+    BX24.callMethod('landing.repo.unregister',
+        {code: 'ru.webmens.yamap.jon'},
+        function(result)
+            {
+                if(result.error())
+                    console.error(result.error());
+                else
+                    console.info(result.data());
+            }
+    );
+}
+
 function deleteByKey (arData, keyToRemove) {
 	for(key in arData){
 	  if(arData.hasOwnProperty(key) && (key == keyToRemove)) {
@@ -140,64 +167,20 @@ function application () {
 	
 	var curapp = this;
 	
-	$('#choose-file-dialog').on('shown.bs.modal', function () {
-		$('#save-btn').addClass('disabled');
-		// curapp.dirFiles(0);
-		curapp.displayDir(undefined, '#file-list', '#save-btn');
-	})	
-
-	$('.rating-image').on('click', function() {
-		curapp.changeImage($(this).data('place'));
-	});
+//	$('#choose-file-dialog').on('shown.bs.modal', function () {
+//		$('#save-btn').addClass('disabled');
+//		// curapp.dirFiles(0);
+//		curapp.displayDir(undefined, '#file-list', '#save-btn');
+//	})	
+//
+//	$('.rating-image').on('click', function() {
+//		curapp.changeImage($(this).data('place'));
+//	});
 	
 	this.getAppInfo();
 }
 
 /* installation methods */
-application.prototype.addRatingUserRow = function (arUser) {
-	$('#users').append('<li data-user-id="' + arUser.id +'"><a href="javascript:void(0);" onclick="app.removeRatingUser(' + arUser.id + 
-		');" class="btn btn-danger btn-raised"><i class="fa fa-times"></i><div class="ripple-wrapper"></div></a> ' +
-		arUser.name + '</li>');
-}
-
-application.prototype.removeRatingUser = function (idUser) {
-	result = confirm('Вы уверены, что хотите удалить пользователя ' + this.arInstallRatingUsers[idUser].name 
-	  + ' из рейтинга?');
-	if (result) {
-		$('[data-user-id=' + idUser + ']').remove();
-		this.arInstallRatingUsers = deleteByKey(this.arInstallRatingUsers, idUser);
-		app.checkSaving();
-		// console.log(this.arInstallRatingUsers);
-	}
-}
-
-application.prototype.addRatingUsers = function() {
-	var curapp = this;
-
-	BX24.selectUsers(function(users) {
-		for (var indexUser in users) {
-			if (!curapp.arInstallRatingUsers.hasOwnProperty(users[indexUser].id)) {
-				curapp.arInstallRatingUsers[users[indexUser].id] = users[indexUser];
-				curapp.addRatingUserRow(users[indexUser]);
-			}
-		}
-		curapp.checkSaving();
-	});
-}
-
-application.prototype.checkSaving = function () {
-	if (arrayLength(this.arInstallRatingUsers) > 0) {
-		$('#save-btn').removeClass('disabled');
-		$('#users').removeClass('hidden');
-		app.resizeFrame();
-		
-	}
-	else {
-		$('#save-btn').addClass('disabled');
-		$('#users').addClass('hidden');
-	}
-}
-
 application.prototype.finishInstallation = function () {
 	
 	// start saving
@@ -213,7 +196,6 @@ application.prototype.finishInstallation = function () {
 		params,
 		function (data)
 		{
-			console.log(data)			
 			var answer = JSON.parse(data);
 			if (answer.status == 'error') {
 				console.log('error', answer.result);
@@ -224,7 +206,7 @@ application.prototype.finishInstallation = function () {
 			
 				BX24.callBind('ONAPPUNINSTALL', 'http://www.b24go.com/rating/application.php?operation=uninstall');
 				BX24.installFinish();
-			}			
+			}
 		}
 
 	);
@@ -321,328 +303,107 @@ application.prototype.addLoadedKey = function(aKey) {
 }
 		
 /* application methods */
-application.prototype.setRatingImage = function(imageIndex, imageURL) {
-	this.appUserOptions.images[imageIndex] = imageURL;
-	$('#image-list').find('[data-place=' + imageIndex + ']').attr('src', imageURL);
-	
-	if (this.appLoadedKeys['constructor'].loaded === true) {
-		this.saveOptions();
-		this.isDataLoaded();
-	}
-}
-
-application.prototype.setDefaultImages = function() {
-	var defaultImages = {
-		1: 'images/rating_1st.png',
-		2: 'images/rating_2nd.png',
-		3: 'images/rating_3d.png'
-	}
-	
-	for (imageIndex in defaultImages)
-		this.setRatingImage(imageIndex, defaultImages[imageIndex]);		
+application.prototype.actionFormCoordinates = '';
+application.prototype.idCoordinatesForm = '';
+application.prototype.createCoordinates = function () {
+	$('#dlg').dialog('open').dialog('setTitle','Создание');
+        $('#fm').form('clear');
+        this.actionFormCoordinates = 'save_coordinates';
+        //url = 'forms/form_coordinates/save.php?appId='+appId;    
 	
 }
-
-application.prototype.loadPlaceImage = function() {
-	$('#choose-file-dialog').modal('hide');
-			
-	this.setRatingImage(this.changePlaceImage, '//' + this.appInfo.DOMAIN + '/disk/showFile/' + this.chosenFile.image + '/?&ncc=1&filename=' + this.chosenFile.name);
-
-}
-
-application.prototype.changeImage = function(place) {
-	this.changePlaceImage = place;
-	$('#choose-file-dialog').modal();
-}
-
-
-application.prototype.displayDir = function (itemElement, selectorFiles, selectorSave) {
-	var list = $(selectorFiles),
-		item = $(itemElement),
-		itemId = item.data('object'),
-		itemType = item.data('type'),
-		itemName = item.data('name');
-		
-	$(selectorSave).addClass('disabled');	
-	
-	this.chosenFile = {};
-	
-	// 4 варианта: либо мы показываем хранилища, либо мы показываем каталоги конкретного хранилища, либо мы показываем содержимое каталога, либо мы выбрали файл
-	// 1. itemElement = undefined
-	// 2.  itemType = storage
-	// 3. itemType = folder
-	// 4. itemType = file
-	
-	if (!isset(itemElement)) listType = 'root'
-	else listType = itemType;
-	
-	b24_iteminfo_command = '';
-	
-	switch (listType){
-		case 'root':
-			b24_command = 'disk.storage.getlist';
-			b24_params = {};
-			break;
-		case 'storage':
-			b24_iteminfo_command = 'disk.storage.get';
-			b24_command = 'disk.storage.getchildren';
-			b24_params = {id: itemId};
-			break;
-		case 'folder':
-			b24_iteminfo_command = 'disk.folder.get';
-			b24_command = 'disk.folder.getchildren';
-			b24_params = {id: itemId};
-			break;
-	}
-	
-	function getFileList (result) {
-	
-		list.html('');
-		
-		// Сначала получаем информацию о текущем элементе, чтобы добавить ссылку на "предыдущий шаг"
-		if (!isset(result))
-			data = [];
-		else {
-			if (result.error())
-				console.error(result.error());
-			else 
-				var data = result.data(); 
-		}
-		
-		console.dir('current item', data);
-		
-		// Если мы только что зашли в хранилище, или выходили из папок, дойдя до корневой
-		if  ((listType == 'storage') || ((listType == 'folder') && (!isset(data.PARENT_ID))) ) {
-			list.append('<li onclick="app.displayDir(undefined, \'' + selectorFiles + '\', \'' + selectorSave + '\');" class="file-item"><i class="fa fa-reply"></i> ..</li>');
-		}
-		else {
-			if (listType == 'folder') {	
-				var parentType = 'folder';
-				if (data.PARENT_ID == data.STORAGE_ID) parentType = 'storage';
-				
-				list.append('<li onclick="app.displayDir(this, \'' + selectorFiles + '\', \'' + selectorSave + '\');" data-object="' + data.PARENT_ID + '" data-type="' + 
-					parentType + '" class="file-item"><i class="fa fa-reply"></i> ..</li>');	
-			}			
-		}
-		
-		// Теперь получаем список элементов текущего уровня
-		BX24.callMethod(
-			b24_command,
-			b24_params,
-			function (result)
-			{
-				if (result.error())
-					console.error(result.error());
-				else {
-					var data = result.data(); 
-					console.log('current items', data);
-					
-					for (itemIndex in data) {
-					
-						
-						var icon = 'fa-folder', type = 'folder';
-						if (isset(data[itemIndex].ENTITY_TYPE)) { 
-							icon = 'fa-database'; // для папок и файлов ENTITY_TYPE не задано
-							type = 'storage';
-						}
-						if (data[itemIndex].TYPE == 'file') { 
-							icon = 'fa-file'; 
-							type = 'file';
-						}	
-						
-						list.append('<li onclick="app.displayDir(this, \'' + selectorFiles + '\', \'' + selectorSave + '\');" class="file-item" data-object="' + data[itemIndex].ID + '" data-type="' +
-							type + '" data-name="' + data[itemIndex].NAME + '"><i class="fa ' + icon + '"></i> ' + data[itemIndex].NAME + '</li>');
-					}
-					
-					
-					if (result.more())
-						result.next();
-				}
-			}
-		);
-		
-	}
-	
-	
-	if (b24_iteminfo_command != '')
-		BX24.callMethod(
-			b24_iteminfo_command,
-			b24_params,
-			getFileList
-		);
-	else {
-		if (listType == 'file') {
-			list.find('.file-item').removeClass('file-item-selected');
-			item.addClass('file-item-selected');
-			
-			this.chosenFile.image = itemId;
-			this.chosenFile.name = itemName;
-			
-			$(selectorSave).removeClass('disabled');	
-		}
-		else getFileList();
-	}
-
-}
-
-application.prototype.toggleAvatars = function () {
-	this.appUserOptions.displayAvatars = !this.appUserOptions.displayAvatars;
-	$('#avatar-option').prop( "checked", this.appUserOptions.displayAvatars ? "checked" : null );
-
-	this.saveOptions();
-	this.isDataLoaded();
-}
-
-application.prototype.getUserBlockHTML = function (idUser, positionUser) {
-	
-	var avatar_str = '';
-	
-	if (this.appUserOptions.displayAvatars) {
-		avatar_str = 
-			'<div class="row-picture">' +
-				'<img class="circle" src="' + this.arInstallRatingUsers[idUser].PERSONAL_PHOTO + '" alt="icon">';
-		if (positionUser <= 3) 
-			avatar_str += '<img class="circle" style="z-index:1000; position: absolute; left: -5px; top: -5px; height: 35px; width: 35px"' +
-				'src="' + this.appUserOptions.images[positionUser] + '" alt="icon">';
-				
-		avatar_str += '</div>';
-	}
-		
-	var itemHTML = '<div class="list-group-item list-group-item-overflow">' +
-		avatar_str +
-		'<div class="row-content">' +
-			'<div class="action-secondary"><i class="mdi-material-info"></i></div>' +
-			'<span class="list-group-item-heading">' + 
-				this.arInstallRatingUsers[idUser].FIRST_NAME + ' ' +
-				this.arInstallRatingUsers[idUser].LAST_NAME + 
-				
-				'</span>' +
-			'<p class="list-group-item-text text-success">' +
-				accounting.formatNumber(this.arInstallRatingUsers[idUser].RATE_SUM, 0, ' ') + '</p>' +
-		'</div>' +
-	'</div>';
-	
-	return itemHTML;
-
-}
-
-application.prototype.processUserInterface = function () {
-
-	function compareUsers(userA, userB) {
-		  return userB.RATE_SUM - userA.RATE_SUM;
-	}
-	
-	var arSortedRatingUsers = [];
-	for (idUser in this.arInstallRatingUsers)
-		arSortedRatingUsers.push(this.arInstallRatingUsers[idUser]);
-		
-	arSortedRatingUsers.sort(compareUsers);
-
-	console.log('Все данные ', this.arInstallRatingUsers);			
-	console.log('Отсортированные данные ', arSortedRatingUsers);			
-	
-	$('#rating-list').html('');
-	
-	
-	var my_sum = 0, max_sum = 0;
-	if (this.arInstallRatingUsers.hasOwnProperty(this.currentUser))
-		my_sum = this.arInstallRatingUsers[this.currentUser].RATE_SUM;
-	
-	for (indexUser in arSortedRatingUsers) {
-		idUser = arSortedRatingUsers[indexUser].ID_USER;
-		userHTML = this.getUserBlockHTML(idUser, parseInt(indexUser) + 1);
-
-		if (max_sum < this.arInstallRatingUsers[idUser].RATE_SUM)
-			max_sum = this.arInstallRatingUsers[idUser].RATE_SUM;
-			
-		$('#rating-list').append(userHTML);
-	}
-	$('#rating-list').append('<div class="clearfix"></div>');
-	
-	var additionalHTML = 
-		'<div class="list-group-item">' +
-			'<div class="row-action-primary"><i class="fa fa-usd"></i></div>' +
-			'<div class="row-content text-success">' +
-				'<div class="action-secondary"><i class="mdi-material-info"></i></div>' +
-				'<span class="list-group-item-heading">' + accounting.formatNumber(my_sum, 0, ' ') + '</span>' +
-			'</div>' +
-		'</div>	';	
-		
-	$('#rating-list-real').html(additionalHTML);
-	
-	if (my_sum < max_sum) {
-		var additionalHTML = 
-			'<div class="list-group-item">' +
-				'<div class="row-action-primary"><i class="fa fa-arrow-up"></i></div>' +
-				'<div class="row-content text-danger">' +
-					'<div class="action-secondary"><i class="mdi-material-info"></i></div>' +
-					'<span class="list-group-item-heading">' + accounting.formatNumber(max_sum - my_sum, 0, ' ') + '</span>' +
-					'<p class="list-group-item-text text-danger">осталось до лидера</p>' +
-				'</div>' +
-			'</div>	';	
-			
-		$('#rating-list-real').append(additionalHTML);
-	}
-	
+application.prototype.editCoordinates = function () {
+	var row = $('#dg').datagrid('getSelected');
+        if (row){
+                $('#dlg').dialog('open').dialog('setTitle','Изменение');
+                $('#fm').form('load',row);
+                this.actionFormCoordinates = 'update_coordinates';
+                this.idCoordinatesForm = {id: row.id};                
+                //url = 'forms/form_coordinates/update.php?id='+row.id+'&appId='+appId;
+        }    
 	
 }
-
-application.prototype.SaveRatingData = function () {
-	
-	var curapp = this,
-		params = array_merge({
-			id_user: this.currentUser,
-			sum: this.arInstallRatingUsers[this.currentUser].RATE_SUM,
-			rate_date: this.yesterday,
-			operation: 'add_rating'
-		}, BX24.getAuth());
-
-	
-	if (this.idRating != 0) {
-		params.id = this.idRating;
-		params.operation = 'update_rating';
-	}
-
+application.prototype.saveCoordinates = function () { 
+var form_data = {};
+// переберём все элементы input, textarea и select формы с id="myForm "
+$('#fm').find ('input, textearea, select').each(function() {
+  // добавим новое свойство к объекту $data
+  // имя свойства – значение атрибута name элемента
+  // значение свойства – значение свойство value элемента
+  form_data[this.name] = $(this).val();
+});
+console.log(form_data);
+var authParams = BX24.getAuth() 
+        params = array_merge({operation: this.actionFormCoordinates}, authParams)
+        params = array_merge(params, form_data)
+        params = array_merge(params, this.idCoordinatesForm)
+        curapp = this;
+if($('#fm').form('validate')){ 
 	$.post(
 		"application.php",
 		params,
 		function (data)
 		{
-			console.log('data', data);
+                        console.log(data)
 			var answer = JSON.parse(data);
-			console.log('answer', answer);
-			
 			if (answer.status == 'error') {
 				console.log('error', answer.result);
-				curapp.displayErrorMessage('К сожалению, произошла ошибка сохранения вашего рейтинга',
+				curapp.displayErrorMessage('К сожалению, произошла ошибка сохранения списка участников рейтинга. Попробуйте перезапустить приложение',
 					['#error']);
 			}
-			else {
-				
-				console.log('Сохранены данные о сделках текущего пользователя');
-				
+			else {	
+                                console.log('Ура получилось');
+                                $('#dlg').dialog('close');		// close the dialog
+                                $('#dg').datagrid('reload');	// reload the user data
 			}
 		}
 
-	);	
+	);
+}	
+}
+application.prototype.loadCoordinates = function () { 
+    var authParams = BX24.getAuth() 
+        params = array_merge({operation: 'load_coordinates'}, authParams)
+
+        curapp = this;                                
+        $('#dg').datagrid('load', params);            
 	
 }
+application.prototype.destroyCoordinates = function () {
+	var row = $('#dg').datagrid('getSelected');
+        //console.log('row')
+        if (row){
+            var authParams = BX24.getAuth() 
+            params = array_merge({operation: 'destroy_coordinates'}, authParams)
+            params = array_merge(params, {id:row.id})
+            //params = array_merge(params, this.idCoordinatesForm)
+            curapp = this;
+                $.messager.confirm('Удаление','Вы действительно хотите удалить точку?',function(r){
+                        if (r){
+                            $.post(
+                                "application.php",
+                                params,
+                                function (data)
+                                {
+                                        console.log(data)
+                                        var answer = JSON.parse(data);
+                                        if (answer.status == 'error') {
+                                                console.log('error', answer.result);
+                                                curapp.displayErrorMessage('К сожалению, произошла ошибка сохранения списка участников рейтинга. Попробуйте перезапустить приложение',
+                                                        ['#error']);
+                                        }
+                                        else {	
+                                                console.log('Ура получилось');
+                                                //$('#dlg').dialog('close');		// close the dialog
+                                                $('#dg').datagrid('reload');	// reload the user data
+                                        }
+                                }
 
-application.prototype.displayDeals = function () {
-		
-	var curapp = this;
-	this.appLoadedKeys['constructor'].loaded = true;
+                            );
+                        }
+                });
+        }   
 	
-	/*
-	this.addLoadedKey('user-list');
-	this.addLoadedKey('user-data');
-	
-	this.GetRatingUsers();
-	*/
-	
-	this.processUserInterface();
-	this.SaveRatingData();
 }
-
 // create our application
 app = new application();

@@ -1,146 +1,133 @@
-<?
+<?php
 	require_once("application.php");	
 ?>
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Рейтинг (пример 18)</title>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="css/style.css"/>
+                <link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/default/easyui.css">
+		<link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/icon.css">
+		<link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/themes/color.css">
+		<link rel="stylesheet" type="text/css" href="https://www.jeasyui.com/easyui/demo/demo.css">
+		<script type="text/javascript" src="https://code.jquery.com/jquery-1.6.min.js"></script>
+                <script type="text/javascript" src="../../vendor/js/tempusjs/v0.2.18/tempusjs.min.js"></script>
+		<script type="text/javascript" src="../../vendor/jquery-easyui-1.5.4.4/jquery.easyui.min.js"></script>
+                <script type="text/javascript" src="../../vendor/jquery-easyui-1.5.4.4/locale/easyui-lang-ru.js"></script>
+                <script src="//api.bitrix24.com/api/v1/"></script>
+                <!-- Следующие 2 скрипта переписать на PHP-->
+                <script type="text/javascript" src="blocks/block_0/js/data.js"></script>
+		<script type="text/javascript" src="js/application.js"></script>
+                <script type="text/javascript" src="js/yaMap.js"></script> 
+                <script type="text/javascript" src="js/form_coordinates.js"></script> 
+                <!-- Переделать на YA API 2.1-->
+                <script src="https://api-maps.yandex.ru/2.0/?load=package.full&amp;lang=ru-RU"" type="text/javascript"></script>
+    </head>
+    <body>
+        <div id="app">
+            <h2>Basic Tabs</h2>
+            <p>Click tab strip to swap tab panel content.</p>
+            <div style="margin:20px 0 10px 0;"></div>
+            <div class="easyui-tabs" style="width:100%;height:500px">
+                <div title="Управление приложением" style="padding:10px">                
+                    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="app.addBlocks();return false">Добавить блок</a>
+                    <!-- Доделать реализацию-->
+                    <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'" onclick="app.delBlocks();return false">Удалить блок</a>                               
+                </div>
+                <div title="Управление координатами" style="padding:10px">
+                    <!-- Реализовать пагинацию-->
+                    <table id="dg" title="Координаты" class="easyui-datagrid" style="width:100%;height:250px"
+                            url= 'application.php';
+                            toolbar="#toolbar" pagination="false"
+                            rownumbers="true" fitColumns="true" singleSelect="true">
+                        <thead>
+                                <tr>
+                                        <th field="latitude" width="50">Долгота</th>
+                                        <th field="longitude" width="50">Широта</th>
+                                        <th field="balloonContentHeader" width="150">Заголовок</th>
+                                        <th field="balloonContentBody" width="150">Тело</th>
+                                        <th field="balloonContentFooter" width="150">Подвал</th>
+                                        <th field="clusterCaption" width="50">Название в кластере</th>
+                                        <th field="hintContent" width="50">Подсказка</th>
+                                        
+                                        <th field="iconLayout" width="50">Тип макета</th>
+                                        <th field="iconImageHref" width="50">Изображение метки</th>
+                                        <th field="iconImageSizeWidth" width="50">Ширина метки</th>
+                                        <th field="iconImageSizeHeight" width="50">Высота метки</th>
+                                        <th field="iconImageOffsetHorizontal" width="50">Горизонтальный отступ</th>
+                                        <th field="iconImageOffsetVertical" width="50">Вертикальный отступ</th>
 
-    <!-- Bootstrap -->
-    <link href="../../vendor/css/bootstrap/v3.1.1/bootstrap.min.css" rel="stylesheet">
-    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
+                                </tr>
+                        </thead>
+                    </table>
+                    <div id="toolbar">
+                            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="app.createCoordinates()">Добавить точку</a>
+                            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="app.editCoordinates()">Изменить точку</a>
+                            <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="app.destroyCoordinates()">Удалить точку</a>
+                    </div>
+                </div>
+                <div title="Как узнать координаты" style="padding:10px">
+                    <div id="YMapsID"></div>
+                    <div id="coord_form">                    
+                        <label for="latlongmet">Координаты метки:</label>
+                        <input id="latlongmet" class="Input-text">
 
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-	
-	<!-- Include roboto.css to use the Roboto web font, material.css to include the theme and ripples.css to style the ripple effect -->
-        <link href="../../vendor/css/roboto/roboto.min.css" rel="stylesheet">
-        <link href="../../vendor/css/material/material.min.css" rel="stylesheet">
-        <link href="../../vendor/css/ripples/ripples.min.css" rel="stylesheet">
-	
-    <link href="css/application.css" rel="stylesheet">
+                        <label>Масштаб: </label>
+                        <input id="mapzoom" class="Input-text">
 
-</head>
-<body>
-<div id="app" class="container-fluid">
-
-	<div class="modal fade" id="choose-file-dialog" tabindex="-1" role="dialog" aria-labelledby="choose-file-dialog-label">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<h4 class="modal-title" id="choose-file-dialog-label">Выберите файл</h4>
-				</div>
-				<div class="modal-body files">
-					<ul id="file-list" class="list-unstyled"></ul>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-default btn-raised" data-dismiss="modal">Отмена</button>
-					<button type="button" class="btn btn-primary btn-raised" id="save-btn" onclick="app.loadPlaceImage()">Выбрать</button>
-				</div>
+                        <label>Центр карты: </label>
+                        <input id="latlongcenter" class="Input-text">                
+                    </div>
+                </div>            
+                <div title="О приложени" data-options="iconCls:'icon-help',closable:true" style="padding:10px">
+                    This is the help content.
+                </div>
+            </div>
+        </div>  
+	<div id="dlg" class="easyui-dialog" style="width:500px;height:600px;padding:10px 20px"
+			closed="true" buttons="#dlg-buttons">
+		<div class="ftitle">Координата</div>
+		<form id="fm" method="post" novalidate style="padding:0px 20px">
+			<div class="fitem">                            
+                            <input name="latitude" label="Долгота:" labelPosition="top" class="easyui-textbox" required="true" style="width:100%;">
 			</div>
-		</div>
-	</div>
-
-	<div class="bs-callout bs-callout-danger">
-		<h4>Смешанный тип приложений</h4>
-		<p>Работа с сохраненной авторизацией</p>
-	</div>
-	<div class="alert alert-dismissable alert-warning hidden" id="error"></div>
-	<div class="row">
-		<div class="col-md-5 col-sm-6">
-			<div class="panel panel-success">
-				<div class="panel-heading">
-					<h3 class="panel-title">Участники рейтинга</h3>
-				</div>
-				<div class="panel-body">
-					<div class="list-group" id="rating-list">
-						<i class="fa fa-spinner fa-spin"></i>
-					</div>
-				</div>
-				<div class="panel-footer">
-					<div class="checkbox">
-						<label onchange="app.toggleAvatars();">
-							<input id="avatar-option" type="checkbox" checked> Показывать аватары
-						</label>
-					</div>
-				</div>
+			<div class="fitem">
+                            <input name="longitude" label="Широта:" labelPosition="top" class="easyui-textbox" required="true" style="width:100%;">
 			</div>
-		</div>
-		<div class="col-md-5 col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h3 class="panel-title">Мой результат</h3>
-				</div>
-				<div class="panel-body">
-					<div class="list-group" id="rating-list-real">
-						<i class="fa fa-spinner fa-spin"></i>
-					</div>
-				</div>
+                        <div class="fitem">
+                            <input name="balloonContentHeader" label="Заголовок:" labelPosition="top" class="easyui-textbox" style="width:100%;">
 			</div>
-		</div>
-	</div>
-	<div class="row hidden" id="admin-options">
-		<div class="col-md-5 col-sm-6">
-			<div class="panel panel-info">
-				<div class="panel-heading">
-					<h3 class="panel-title">Изображения для рейтинга</h3>
-				</div>
-				<div class="panel-body">
-					<div class="list-group" id="image-list">
-						<ul class="list-inline">
-							<li><img src="images/empty.gif" class="img-circle rating-image" data-place="1" title="Заменить изображение для 1-го места"></li>
-							<li><img src="images/empty.gif" class="img-circle rating-image" data-place="2" title="Заменить изображение для 2-го места"></li>
-							<li><img src="images/empty.gif" class="img-circle rating-image" data-place="3" title="Заменить изображение для 3-го места"></li>
-							<li><a class="btn btn-default btn-success btn-raised" href="#" onclick="app.setDefaultImages(true);" title="Вернуть стандартные изображения" role="button"><i class="fa fa-undo"></i></a></li>
-						</ul>						
-					</div>
-				</div>
+                        <div class="fitem">
+                            <input name="balloonContentBody" label="Тело:" labelPosition="top" class="easyui-textbox" style="width:100%;">
 			</div>
-		</div>
+                        <div class="fitem">
+                            <input name="balloonContentFooter" label="Подвал:" labelPosition="top" class="easyui-textbox" style="width:100%;">
+			</div>
+                        <div class="fitem">
+                            <input name="clusterCaption" label="Название в кластере:" labelPosition="top" class="easyui-textbox" style="width:100%;">
+			</div>
+                        <div class="fitem">
+                            <input name="hintContent" label="Подсказка:" labelPosition="top" class="easyui-textbox" style="width:100%;">
+			</div>
+		</form>
 	</div>
-</div>
-
-<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-<script type="text/javascript" src="../../vendor/js/bootstrap/v3.1.1/bootstrap.min.js"></script>
-<script type="text/javascript" src="../../vendor/js/tempusjs/v0.2.18/tempusjs.min.js"></script>
-<script type="text/javascript" src="../../vendor/js/accounting/v0.4.2/accounting.min.js"></script>
-<script src="../../vendor/js/ripples/ripples.min.js"></script>
-<script src="../../vendor/js/material/material.min.js"></script>
-<script type="text/javascript" src="js/application.js"></script>
-<script src="//api.bitrix24.com/api/v1/"></script>
-
-<script>
-	
-    $(document).ready(function () {
-
-		BX24.init(function(){
-		
-			$.material.init();
-
-			app.saveFrameWidth();
-			app.loadOptions();
-
-			app.currentUser = <?=$application->currentUser;?>;	
-			
-			<?foreach ($application->arRatingUsers as $arUser):?>
-				app.arInstallRatingUsers[<?=$arUser["ID_USER"]?>] = JSON.parse('<?echo json_encode($arUser);?>');					
-			<?endforeach;?>
-			
-			app.idRating = <?=$application->currentRating;?>;
-			app.displayDeals();
-
-		});
-    });
-
-</script>
-
-</body>
+	<div id="dlg-buttons">
+            <!-- Переделать иконки на icon8-->
+		<a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="app.saveCoordinates()" style="width:90px">Ок</a>
+		<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">Отмена</a>
+	</div>
+	<script>	
+            $(document).ready(function () {
+                BX24.init(function(){
+                    app.saveFrameWidth();                                
+                    app.resizeFrame();
+                    app.loadCoordinates();
+                    
+                    ymaps.ready(init);
+                });
+            });
+        </script>        
+    </body>
 </html>

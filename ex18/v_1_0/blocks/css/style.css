@@ -1,0 +1,66 @@
+#map{
+    width: 100%;
+}       
+.g-h_50{
+    height: 50px; 
+}
+.g-h_100{
+    height: 100px; 
+}
+.g-h_150{
+    height: 150px; 
+}
+.g-h_200{
+    height: 200px; 
+}
+.g-h_250{
+    height: 250px; 
+}
+.g-h_300{
+    height: 300px; 
+}
+.g-h_350{
+    height: 350px; 
+}
+.g-h_400{
+    height: 400px; 
+}
+.g-h_450{
+    height: 450px; 
+}
+.g-h_500{
+    height: 500px; 
+}
+.g-h_550{
+    height: 550px; 
+}
+.g-h_600{
+    height: 600px; 
+}
+.g-h_650{
+    height: 650px; 
+}
+.g-h_700{
+    height: 700px; 
+}
+.g-h_750{
+    height: 750px; 
+}
+.g-h_800{
+    height: 800px; 
+}
+.g-h_850{
+height: 850px; 
+}
+.g-h_900{
+height: 900px; 
+}
+.g-h_950{
+height: 950px; 
+}
+.g-h_1000{
+height: 1000px; 
+}
+.tempmap{
+display: none;
+}
