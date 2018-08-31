@@ -20,8 +20,7 @@
                 <!-- Следующие 2 скрипта переписать на PHP-->
                 <script type="text/javascript" src="blocks/block_0/js/data.js"></script>
 		<script type="text/javascript" src="js/application.js"></script>
-                <script type="text/javascript" src="js/yaMap.js"></script> 
-                <script type="text/javascript" src="js/form_coordinates.js"></script> 
+                <script type="text/javascript" src="js/yaMap.js"></script>                 
                 <!-- Переделать на YA API 2.1-->
                 <script src="https://api-maps.yandex.ru/2.0/?load=package.full&amp;lang=ru-RU"" type="text/javascript"></script>
     </head>
@@ -31,7 +30,24 @@
             <p>Click tab strip to swap tab panel content.</p>
             <div style="margin:20px 0 10px 0;"></div>
             <div class="easyui-tabs" style="width:100%;height:500px">
-                <div title="Управление приложением" style="padding:10px">                
+                <div title="Управление приложением" style="padding:10px"> 
+                    
+                    <?php
+                      //print_r(getBlocks());
+                    ?>
+                    <input class="easyui-combobox" data-options="
+                        valueField: 'label',
+                        textField: 'value',
+                        data: [
+                        <?php 
+                        foreach (getBlocksList() as $block){
+                        ?>
+                            {
+                            label: '<?php echo $block?>',
+                            value: '<?php echo $block?>'
+                            },
+                            <?php }?>],
+                        multiple:true"/>
                     <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-add'" onclick="app.addBlocks();return false">Добавить блок</a>
                     <!-- Доделать реализацию-->
                     <a href="#" class="easyui-linkbutton" data-options="iconCls:'icon-remove'" onclick="app.delBlocks();return false">Удалить блок</a>                               

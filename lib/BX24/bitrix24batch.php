@@ -42,7 +42,12 @@ class Bitrix24Batch extends \Bitrix24\Bitrix24Entity
 	public function addDealListCall($id, array $orders = array(), array $select = array(), array $filter = array(), $start = null)
 	{
 		$this->addCall($id, "crm.deal.list", array("start" => $start, "orders" => $orders, "select" => $select, "filter" => $filter));
-	}		
+	}
+        
+        public function addRepoRegisterListCall($id, array $blockData = array())
+	{
+		$this->addCall($id, "landing.repo.register", $blockData);
+	}
 		
 	public function clear()
 	{

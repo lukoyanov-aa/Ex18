@@ -1,1 +1,0 @@
-<?php define("APP_ID", "local.5b753487a7ea13.92444842");

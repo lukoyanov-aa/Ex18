@@ -6,7 +6,7 @@ use Bitrix24\Bitrix24Exception;
 class Bitrix24User extends Bitrix24Entity
 {
 	/**
-	 * Check is current user admin
+	 * Проверить текущий пользователь admin
 	 * @link http://dev.1c-bitrix.ru/rest_help/general/user_admin.php
 	 * @throws Bitrix24Exception
 	 * @return boolean
@@ -18,7 +18,7 @@ class Bitrix24User extends Bitrix24Entity
 	}
 
 	/**
-	 * Get information about current user by his auth information. This method will be use security sign automatically
+	 * Получите информацию о текущем пользователе по его служебной информации. Этот метод будет автоматически использовать знак безопасности
 	 * @link http://dev.1c-bitrix.ru/rest_help/users/user_current.php
 	 * @throws Bitrix24Exception
 	 * @return array
@@ -31,6 +31,7 @@ class Bitrix24User extends Bitrix24Entity
 
 	/**
 	 * Get list of fields entity user
+         * Получить список пользователей сущностей полей
 	 * @link http://dev.1c-bitrix.ru/rest_help/users/user_fields.php
 	 * @throws Bitrix24Exception
 	 * @return array
@@ -42,7 +43,7 @@ class Bitrix24User extends Bitrix24Entity
 	}
 
 	/**
-	 * Get list of users
+	 * Получить список пользователей
 	 * @link http://dev.1c-bitrix.ru/rest_help/users/user_get.php
 	 * @throws Bitrix24Exception
 	 * @param $SORT - field name to sort by them

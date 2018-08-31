@@ -8,6 +8,7 @@ class Bitrix24Log extends Bitrix24Entity
 
 	/**
 	 * Put a message to blog
+         * Поместить сообщение в блог
 	 * @link http://dev.1c-bitrix.ru/community/blogs/wladart/rest_logblogpostadd.php
 	 * @throws Bitrix24Exception
 	 * @param $POST_MESSAGE - text of message

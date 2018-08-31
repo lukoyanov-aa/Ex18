@@ -75,18 +75,34 @@
   
 })();
 
-application.prototype.addBlocks = function () {    
-    BX24.callMethod(
-        'landing.repo.register',         
-        data,
-        function(result)
-            {
-                if(result.error())
-                    console.error(result.error());
-                else
-                    console.info(result.data());
-            }
-    );
+application.prototype.addBlocks = function () {
+    //alert($('.easyui-combobox').val());
+    var authParams = BX24.getAuth(), 
+		params = array_merge({operation: 'add_blocks'}, authParams),
+		params = array_merge(params, {blocksId:$('.easyui-combobox').val()}),
+		curapp = this;
+
+	$.post(
+		"application.php",
+		params,
+		function (data)
+		{
+                    console.log(data)
+                        var answer = JSON.parse(data);
+			if (answer.status == 'error') {
+				console.log('error', answer.result);
+				curapp.displayErrorMessage('К сожалению, произошла ошибка сохранения списка участников рейтинга. Попробуйте перезапустить приложение',
+					['#error']);
+			}
+			else {
+			
+				//BX24.callBind('ONAPPUNINSTALL', 'http://www.b24go.com/rating/application.php?operation=uninstall');
+				//BX24.installFinish();
+                                console.log('hello')
+			}
+		}
+
+	);
 }
 
 application.prototype.delBlocks = function () {
@@ -144,8 +160,6 @@ function isset(aValue){
 
 // our application constructor
 function application () {
-	this.currentUser = 0;
-	this.arInstallRatingUsers = new Object();
 	
 	// get daily date period	
 	this.today = nullifyDate(new Date()),
@@ -161,21 +175,9 @@ function application () {
 	this.appUserOptions = {
 		displayAvatars: true,
 		images: {}
-	};
-	
-	this.setDefaultImages();
+	};	
 	
 	var curapp = this;
-	
-//	$('#choose-file-dialog').on('shown.bs.modal', function () {
-//		$('#save-btn').addClass('disabled');
-//		// curapp.dirFiles(0);
-//		curapp.displayDir(undefined, '#file-list', '#save-btn');
-//	})	
-//
-//	$('.rating-image').on('click', function() {
-//		curapp.changeImage($(this).data('place'));
-//	});
 	
 	this.getAppInfo();
 }
@@ -244,7 +246,7 @@ application.prototype.resizeFrame = function () {
 
 application.prototype.saveFrameWidth = function () {
 	this.FrameWidth = document.getElementById("app").offsetWidth;
-}
+};
 		
 application.prototype.displayErrorMessage = function(message, arSelectors) {
 	for (selector in arSelectors) {

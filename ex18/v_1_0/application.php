@@ -20,9 +20,6 @@ class CApplication
 		// проверяем актуальность доступа
 		$isTokenRefreshed = false;
 		
-		// $arAccessParams['access_token'] = '123';
-		// $arAccessParams['refresh_token'] = '333';
-		
 		$this->arB24App = getBitrix24($this->arAccessParams, $isTokenRefreshed, $this->b24_error);
 		return $this->b24_error === true;
 	}	
@@ -127,7 +124,36 @@ class CApplication
                             
                             return true;
 		
-	}	
+	}
+        private function getBlocksData (){
+           $blocksList = getBlocksList();
+           $blocksData = array();
+           foreach ($blocksList as $block) {
+               
+           }
+        }
+        private function addBlocks (){
+            //Получаем список выбраных блоков в виде строки с разделителем ","
+            $blocksString  = htmlspecialchars($_REQUEST['blocksId']);
+            //Преобразуем список в массив
+            $blocksList = explode(",", $blocksString);
+            //Создаем и заполняем массив данных из выбранных блоков
+            $blocks = [];
+            foreach ($blocksList as $block){
+                $blocks[$block] = new $block;
+                 }
+            writeToLog($blocks, 'blocks array');
+            $obB24Batch = new \Bitrix24\Bitrix24Batch\Bitrix24Batch($this->arB24App);
+            foreach ($blocks as $block){
+                $arrBlockData = $block->getDataBlock();
+                //Добавляем данныне в батч список
+                $obB24Batch->addRepoRegisterListCall($arrBlockData['code'],$arrBlockData
+			);
+                 }
+                 //Выполняем батч запрос
+                 $res = $obB24Batch->call();
+                 writeToLog($res, 'blockObB24BatchRes');   
+        }
 	public function saveAuth() {
 		global $db;
 		
@@ -142,6 +168,7 @@ class CApplication
 	
     public function manageAjax($operation, $params)
     {
+        CB24Log::Add($operation);
 		global $db;
 		switch ($operation){
                         case 'load_coordinates': 
@@ -172,52 +199,39 @@ class CApplication
 			case 'uninstall': 			
 				\CB24Log::Add('uninstall 1: '.print_r($_REQUEST, true));					
 				
-			break;			
+			break;
+                        case 'add_blocks': 
+                                //$this->saveAuth();
+                                $res = $this->addBlocks();
+                                $this->returnJSONResult(array('status' => 'success', 'result' => ''));
+				//CB24Log::Add('add_blocks '.print_r($_REQUEST, true));					
+				
+			break;
 			default:
                             writeToLog($_GET, 'default');
 				$this->returnJSONResult(array('status' => 'error', 'result' => 'unknown operation'));
 		}		
     }
-    private function getAuthFromDB() {
-		global $db;
-		
-		$res = $db->getRow('SELECT * FROM `b24_portal_reg` LIMIT 1');
-		$this->arAccessParams = prepareFromDB($res);
-		
-		$this->b24_error = $this->checkB24Auth();
-			
-		if ($this->b24_error != '') {
-			echo $this->b24_error;
-			\CB24Log::Add('background auth error: '.$this->b24_error);	
-			die;
-		}
-		
-		\CB24Log::Add('background auth success!');	
-		
-	}	
+	
     public function start () {                
 		$this->is_ajax_mode = isset($_REQUEST['operation']);
                 
-                //пока не разобрался с background
-		$this->is_background_mode = isset($_REQUEST['background']);
-		
-		if ($this->is_background_mode) $this->getAuthFromDB();
-		else {                        
-			if (!$this->is_ajax_mode){ 
-                            $this->arAccessParams = prepareFromRequest($_REQUEST);                            
-                        }
-			else 
-                            $this->arAccessParams = $_REQUEST;                                                
-                            $this->b24_error = $this->checkB24Auth();			
-                            if ($this->b24_error != '') {
-                                if ($this->is_ajax_mode)
-                                        $this->returnJSONResult(array('status' => 'error', 'result' => $this->b24_error));
-                                else
-                                        echo "B24 error: ".$this->b24_error;
+                       
+                if (!$this->is_ajax_mode){ 
+                    $this->arAccessParams = prepareFromRequest($_REQUEST);                            
+                }
+                else 
+                    $this->arAccessParams = $_REQUEST;                                                
+                    $this->b24_error = $this->checkB24Auth();			
+                    if ($this->b24_error != '') {
+                        if ($this->is_ajax_mode)
+                                $this->returnJSONResult(array('status' => 'error', 'result' => $this->b24_error));
+                        else
+                                echo "B24 error: ".$this->b24_error;
 
-                                die;
-                            }
-		}
+                        die;
+                    }
+		
 		
 	}
 }	
